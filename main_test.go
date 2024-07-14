@@ -24,3 +24,22 @@ func TestGetIpInfoKemenag(t *testing.T) {
 	}
 }
 
+func TestGetPrayerTime(t *testing.T) {
+  // result from above getIp query
+  location := IpInfo{
+    Addr: "103.7.13.24",
+    Country: "Indonesia",
+    Region: "Jakarta",
+    City: "Jakarta",
+    Lat: -6.17189,
+    Lon: 106.834,
+    Timezone: "Asia/Jakarta",
+  }
+
+	res, _ := getPrayerTimes("14-07-2024", location)
+  log.Printf("result: %v\n", res)
+  if res.Isha != "19:06"  {
+    t.Errorf("isha time result doesn't match")
+  }
+}
+
