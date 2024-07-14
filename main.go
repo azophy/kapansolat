@@ -1,7 +1,7 @@
 package main
 
 import (
-  "log"
+  //"log"
 	"net/http"
   "io/ioutil"
   "encoding/json"
@@ -23,15 +23,15 @@ func main() {
 
 type IpInfo struct {
   Addr     string `json:"query"`
-	Lat      string `json:"lat"`
-	Lon      string `json:"lon"`
+	Lat      float64 `json:"lat"`
+	Lon      float64 `json:"lon"`
 	Country  string `json:"country"`
 	Region   string `json:"regionName"`
 	City     string `json:"city"`
 	Timezone string `json:"timezone"`
 }
 
-func jsonRequest(req http.Request, res interface{}) error {
+func jsonRequest(req *http.Request, res interface{}) error {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
     return err
@@ -47,6 +47,7 @@ func jsonRequest(req http.Request, res interface{}) error {
     return err
 	}
 
+  return nil
 }
 
 func getIpInfo(ipAddr string) (IpInfo, error) {
@@ -64,11 +65,10 @@ func getIpInfo(ipAddr string) (IpInfo, error) {
 	// 	"Authorization": {"Bearer Token"},
 	// }
 
-	err := http("GET", url, nil)
+	err = jsonRequest(req, &res)
 	if err != nil {
     return res, err
 	}
-
 
 	return res, nil
 }

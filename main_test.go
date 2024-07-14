@@ -1,6 +1,7 @@
 package main
 
 import (
+  "log"
 	"testing"
 )
 
@@ -17,7 +18,9 @@ const (
 
 func TestGetIpInfoKemenag(t *testing.T) {
 	res, _ := getIpInfo(ipKemenag)
-	if res.Country != "Indonesia" {
+  log.Printf("result: %v\n", res)
+	if res.Country != "Indonesia"  {
 		t.Errorf("expecting country Indonesia, got %v", res.Country)
 	}
 }
+
