@@ -3,6 +3,7 @@ package main
 import (
   //"log"
   "fmt"
+  "time"
 	"net/http"
   "io/ioutil"
   "encoding/json"
@@ -49,6 +50,7 @@ type IpInfo struct {
 	Region   string `json:"regionName"`
 	City     string `json:"city"`
 	Timezone string `json:"timezone"`
+  TimeLoc  *time.Location // *Location
 }
 
 func getIpInfo(ipAddr string) (IpInfo, error) {
@@ -70,6 +72,9 @@ func getIpInfo(ipAddr string) (IpInfo, error) {
 	if err != nil {
     return res, err
 	}
+
+  // load timezone for time package (https://pkg.go.dev/time#LoadLocation)
+  res.TimeLoc, err = time.LoadLocation(res.Timezone)
 
 	return res, nil
 }
@@ -123,3 +128,6 @@ func getPrayerTimes(date string, location IpInfo) (PrayerTimes, error) {
 
 	return res, nil
 }
+
+//func countDownNextPrayer(curTime time.Time, timing PrayerTimes) (string, string, bool) {
+//}

@@ -2,6 +2,7 @@ package main
 
 import (
   "log"
+  "time"
 	"testing"
 )
 
@@ -24,8 +25,7 @@ func TestGetIpInfoKemenag(t *testing.T) {
 	}
 }
 
-func TestGetPrayerTime(t *testing.T) {
-  // result from above getIp query
+func GetLocation() IpInfo {
   location := IpInfo{
     Addr: "103.7.13.24",
     Country: "Indonesia",
@@ -35,6 +35,14 @@ func TestGetPrayerTime(t *testing.T) {
     Lon: 106.834,
     Timezone: "Asia/Jakarta",
   }
+  location.TimeLoc,_ = time.LoadLocation("Asia/Jakarta")
+
+  return location
+}
+
+func TestGetPrayerTime(t *testing.T) {
+  // result from above getIp query
+  location := GetLocation()
 
 	res, _ := getPrayerTimes("14-07-2024", location)
   log.Printf("result: %v\n", res)
@@ -43,3 +51,16 @@ func TestGetPrayerTime(t *testing.T) {
   }
 }
 
+func GetPrayerTime() PrayerTimes {
+  return PrayerTimes{
+    Location: GetLocation(),
+    Fajr: "04:42",
+    Dhuhr: "11:59",
+    Asr: "15:20",
+    Maghrib: "17:52",
+    Isha: "19:06",
+  }
+}
+
+func TestCheckPrayerTimesKemenag(t *testing.T) {
+}
