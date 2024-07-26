@@ -43,3 +43,14 @@ func TestGetPrayerTime(t *testing.T) {
   }
 }
 
+func TestParseTime(t *testing.T) {
+  res, err := parseTime("14-07-2024 19:06", "Asia/Jakarta")
+  if err != nil {
+    t.Errorf("encounter error %v", err)
+  }
+
+  h,m,_ := res.Clock()
+  if h != 19 || m != 6  {
+    t.Error("parse result incorrect")
+  }
+}

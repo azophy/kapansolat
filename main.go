@@ -3,6 +3,7 @@ package main
 import (
   //"log"
   "fmt"
+  "time"
 	"net/http"
   "io/ioutil"
   "encoding/json"
@@ -122,4 +123,14 @@ func getPrayerTimes(date string, location IpInfo) (PrayerTimes, error) {
   }
 
 	return res, nil
+}
+
+func parseTime(datetime, loc string) (time.Time, error) {
+  var emptyTime time.Time
+  const format = "02-01-2006 15:04"
+  tz, err := time.LoadLocation(loc)
+  if err != nil {
+    return emptyTime, err
+  }
+  return time.ParseInLocation(format, datetime, tz)
 }
