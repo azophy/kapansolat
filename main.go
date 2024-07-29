@@ -13,6 +13,10 @@ import (
 
 var APP_PORT = "3000"
 
+func PrayerNames() []string {
+  return []string{"Fajr","Dhuhr", "Asr", "Maghrib", "Isha"}
+}
+
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -87,17 +91,18 @@ func getIpInfo(ipAddr string) (IpInfo, error) {
     //} `json:"timings"`
   //} `json:"data"`
 //}
-type PrayerTimes struct {
-  Location IpInfo
-  Fajr     string `json:"Fajr"`
-  Dhuhr    string `json:"Dhuhr"`
-  Asr      string `json:"Asr"`
-  Maghrib  string `json:"Maghrib"`
-  Isha     string `json:"Isha"`
-}
+// type PrayerTimes struct {
+//   Location IpInfo
+//   Fajr     string `json:"Fajr"`
+//   Dhuhr    string `json:"Dhuhr"`
+//   Asr      string `json:"Asr"`
+//   Maghrib  string `json:"Maghrib"`
+//   Isha     string `json:"Isha"`
+// }
+type PrayerTimes map[string]string
 
 func getPrayerTimes(date string, location IpInfo) (PrayerTimes, error) {
-  res := PrayerTimes{Location: location}
+  res := PrayerTimes{}
   url := fmt.Sprintf("http://api.aladhan.com/v1/timings/%s?method=20&latitude=%v&longitude=%v", date, location.Lat, location.Lon)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -113,14 +118,17 @@ func getPrayerTimes(date string, location IpInfo) (PrayerTimes, error) {
 
   timings := resp.(map[string]interface{})["data"].(map[string]interface{})["timings"].(map[string]interface{})
 
-  res = PrayerTimes{
-    Location: location,
-    Fajr: timings["Fajr"].(string),
-    Dhuhr: timings["Dhuhr"].(string),
-    Asr: timings["Asr"].(string),
-    Maghrib: timings["Maghrib"].(string),
-    Isha: timings["Isha"].(string),
+  for _,i := range PrayerNames() {
+    res[i] = timings[i].(string)
   }
+  // res = PrayerTimes{
+  //   Location: location,
+  //   Fajr: timings["Fajr"].(string),
+  //   Dhuhr: timings["Dhuhr"].(string),
+  //   Asr: timings["Asr"].(string),
+  //   Maghrib: timings["Maghrib"].(string),
+  //   Isha: timings["Isha"].(string),
+  // }
 
 	return res, nil
 }
@@ -133,4 +141,24 @@ func parseTime(datetime, loc string) (time.Time, error) {
     return emptyTime, err
   }
   return time.ParseInLocation(format, datetime, tz)
+}
+
+func getPrayerTimeCountdown(curTime time.Time, loc IpInfo, prayerTimes PrayerTimes) (string, time.Duration, error) {
+  date := curTime.Format("02-01-2006 ")
+  nextPrayer := ""
+  var duration time.Duration
+
+  for _,i := range PrayerNames() {
+    parsedTime, err := parseTime(date + prayerTimes[i], loc.Timezone)
+    if err != nil {
+      return nextPrayer, duration, err
+    }
+
+    if curTime.Before(parsedTime) {
+      nextPrayer = i
+      duration = parsedTime.Sub(curTime)
+      break
+    }
+  }
+  return nextPrayer, duration, nil
 }
