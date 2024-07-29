@@ -49,14 +49,14 @@ func main() {
 	})
 
   // https://echo.labstack.com/docs/error-handling
-  e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-    return func(c echo.Context) error {
-      // https://sorcererxw.com/en/articles/go-echo-error-handing
-      err := next(c)
-      log.Printf("encounter error %v", err)
-      return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-    }
-  })
+  // e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+  //   return func(c echo.Context) error {
+  //     // https://sorcererxw.com/en/articles/go-echo-error-handing
+  //     err := next(c)
+  //     log.Printf("encounter error %v", err)
+  //     return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+  //   }
+  // })
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
