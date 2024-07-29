@@ -22,12 +22,14 @@ func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
     ipAddr := c.RealIP()
-    curTime := time.Now()
 
     loc, err := getIpInfo(ipAddr)
     if err != nil {
       return err
     }
+
+    locTz, _ := time.LoadLocation(loc.Timezone)
+    curTime := time.Now().In(locTz)
 
     prayerTimes, err := getPrayerTimes(curTime.Format("02-01-2006"), loc)
     if err != nil {
