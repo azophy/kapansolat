@@ -46,7 +46,7 @@ func main() {
       "current_time": curTime,
       "prayer_times": prayerTimes,
       "next_prayer": nextPrayer,
-      "duration": duration,
+      "time_to_next_prayer": duration.String(),
 		})
 	})
 
