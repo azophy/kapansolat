@@ -1,9 +1,10 @@
 package main
 
 import (
-  //"log"
+  "log"
   "fmt"
   "time"
+  "errors"
 	"net/http"
   "io/ioutil"
   "encoding/json"
@@ -20,10 +21,43 @@ func PrayerNames() []string {
 func main() {
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
+    ipAddr := c.RealIP()
+    curTime := time.Now()
+
+    loc, err := getIpInfo(ipAddr)
+    if err != nil {
+      return err
+    }
+
+    prayerTimes, err := getPrayerTimes(curTime.Format("02-01-2006"), loc)
+    if err != nil {
+      return err
+    }
+
+    nextPrayer, duration, err := getPrayerTimeCountdown(curTime, loc, prayerTimes)
+    if err != nil {
+      return err
+    }
+
 		return c.JSON(http.StatusOK, echo.Map{
-			"ip_addr": c.RealIP(),
+			"ip_addr": ipAddr,
+      "current_time": curTime,
+      "prayer_times": prayerTimes,
+      "next_prayer": nextPrayer,
+      "duration": duration,
 		})
 	})
+
+  // https://echo.labstack.com/docs/error-handling
+  e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+      // https://sorcererxw.com/en/articles/go-echo-error-handing
+      err := next(c)
+      log.Printf("encounter error %v", err)
+      return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+    }
+  })
+
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
 
@@ -33,10 +67,15 @@ func jsonRequest(req *http.Request, res interface{}) error {
     return err
 	}
 
+  if resp.StatusCode != 200 {
+    return errors.New(fmt.Sprintf("http response unsuccessful. got status code %v", resp.StatusCode))
+  }
+
   respBody, err := ioutil.ReadAll(resp.Body)
   if err != nil {
     return err
 	}
+  log.Printf(string(respBody))
 
   err = json.Unmarshal(respBody, &res)
   if err != nil {
@@ -102,7 +141,7 @@ func getIpInfo(ipAddr string) (IpInfo, error) {
 type PrayerTimes map[string]string
 
 func getPrayerTimes(date string, location IpInfo) (PrayerTimes, error) {
-  res := PrayerTimes{}
+  res := make(PrayerTimes)
   url := fmt.Sprintf("http://api.aladhan.com/v1/timings/%s?method=20&latitude=%v&longitude=%v", date, location.Lat, location.Lon)
 
 	req, err := http.NewRequest("GET", url, nil)
