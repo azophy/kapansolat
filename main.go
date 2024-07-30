@@ -62,6 +62,7 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
 }
+
 func responsePlaintext(c echo.Context, curTime time.Time, loc IpInfo, prayerTimes PrayerTimes, nextPrayer string, nextPrayerUntil time.Duration) error {
   respText := fmt.Sprintf(`KapanSolat
 ==========
@@ -70,7 +71,7 @@ current local time: %v
 next prayer: %v (%v remaining)
 ==========
 prayer times for %v
-%v`, loc.City, loc.Region, loc.Country, curTime.Format("02-01-2006"), nextPrayer, nextPrayerUntil.Round(time.Minute).String(), curTime.Format("15:04"), prayerTimes)
+%v`, loc.City, loc.Region, loc.Country, curTime.Format("15:04"), nextPrayer, nextPrayerUntil.Round(time.Minute).String(), curTime.Format("02-01-2006"), prayerTimes)
 
   return c.String(http.StatusOK, respText)
 }
