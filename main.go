@@ -71,7 +71,10 @@ current local time: %v
 next prayer: %v (%v remaining)
 ==========
 prayer times for %v
-%v`, loc.City, loc.Region, loc.Country, curTime.Format("15:04"), nextPrayer, nextPrayerUntil.Round(time.Minute).String(), curTime.Format("02-01-2006"), prayerTimes)
+`, loc.City, loc.Region, loc.Country, curTime.Format("15:04"), nextPrayer, nextPrayerUntil.Round(time.Minute).String(), curTime.Format("02-01-2006"))
+  for _, i := range PrayerNames() {
+    respText += i + ": " + prayerTimes[i] + "\n"
+  }
 
 	return c.String(http.StatusOK, respText)
 }
