@@ -36,18 +36,12 @@ func main() {
       return err
     }
 
-    nextPrayer, duration, err := getPrayerTimeCountdown(curTime, loc, prayerTimes)
+    nextPrayer, nextPrayerUntil, err := getPrayerTimeCountdown(curTime, loc, prayerTimes)
     if err != nil {
       return err
     }
 
-		return c.JSON(http.StatusOK, echo.Map{
-			"ip_addr": ipAddr,
-      "current_time": curTime,
-      "prayer_times": prayerTimes,
-      "next_prayer": nextPrayer,
-      "time_to_next_prayer": duration.String(),
-		})
+    return responseJson(c, curTime, loc, prayerTimes, nextPrayer, nextPrayerUntil)
 	})
 
   // https://echo.labstack.com/docs/error-handling
@@ -61,6 +55,17 @@ func main() {
   // })
 
 	e.Logger.Fatal(e.Start(":" + APP_PORT))
+}
+
+func responseJson(c echo.Context, curTime time.Time, loc IpInfo, prayerTimes PrayerTimes, nextPrayer string, nextPrayerUntil time.Duration) error {
+		return c.JSON(http.StatusOK, echo.Map{
+			"current_location": loc,
+      "current_time": curTime,
+      "prayer_times": prayerTimes,
+      "next_prayer": nextPrayer,
+      "time_to_next_prayer": nextPrayerUntil.Round(time.Minute).String(),
+		})
+
 }
 
 func jsonRequest(req *http.Request, res interface{}) error {
