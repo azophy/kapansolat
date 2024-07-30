@@ -43,6 +43,21 @@ func main() {
 		ipAddr := c.RealIP()
 		contentType := c.Request().Header.Get(echo.HeaderContentType)
 		acceptType := c.Request().Header.Get(echo.HeaderAccept)
+    isResponseJson := strings.Contains(acceptType, "json") || strings.Contains(contentType, "json")
+
+    plaintextUserAgentKeywords := []string{"curl", "httpie"}
+		userAgent := c.Request().Header.Get("User-Agent")
+    isResponsePlaintext := false
+    for _, keyword := range plaintextUserAgentKeywords {
+      if strings.Contains(userAgent, keyword) {
+        isResponsePlaintext = true
+        break
+      }
+    }
+
+    if !isResponseJson && !isResponsePlaintext {
+      return c.File("static/pages/index.html")
+    }
 
 		loc, err := getIpInfo(ipAddr)
 		if err != nil {
@@ -62,7 +77,7 @@ func main() {
 			return err
 		}
 
-		if strings.Contains(acceptType, "json") || strings.Contains(contentType, "json") {
+		if isResponseJson {
 			return responseJson(c, curTime, loc, prayerTimes, nextPrayer, nextPrayerUntil)
 		}
 

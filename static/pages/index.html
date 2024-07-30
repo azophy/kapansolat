@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <h1>KapanSolat</h1>
+  detected location: <span id="location"></span> <br/>
+  current date & time: <span id="current_datetime"></span> <br/>
+  next prayer time: <span id="next_prayer"></span> <br/>
+  prayer times for today: <span id="prayer_times"></span> <br/>
+  <pre id="debug"></pre>
+
+  <script>
+    function $(id) { return document.getElementById(id); }
+    fetch(window.location, { headers: { Content-Type: "application/json" } }).then(r => r.text()).then(s => $("debug").innerText = s);
+    $("location").innerText = window.location.href;
+    $("next_prayer").innerText = "jsjsis";
+  </script>
+</body>
+</html>
