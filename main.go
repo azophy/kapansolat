@@ -7,16 +7,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
-  "golang.org/x/time/rate"
 	"github.com/labstack/echo/v4"
-  "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/time/rate"
 )
 
 var (
-  APP_PORT = "3000"
-  API_RATE_LIMIT = 5.00
+	APP_PORT       = "3000"
+	API_RATE_LIMIT = 5.00
 )
 
 func PrayerNames() []string {
@@ -26,20 +27,22 @@ func PrayerNames() []string {
 func main() {
 	e := echo.New()
 
-  e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(API_RATE_LIMIT))))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(API_RATE_LIMIT))))
 
 	// CORS restricted with a custom function to allow origins
 	// and with the GET, PUT, POST or DELETE methods allowed.
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOriginFunc: func (_ string) (bool, error) {
-      // for now, always return true
-      return true, nil
-    },
-		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowOriginFunc: func(_ string) (bool, error) {
+			// for now, always return true
+			return true, nil
+		},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
 	e.GET("/", func(c echo.Context) error {
 		ipAddr := c.RealIP()
+		contentType := c.Request().Header.Get(echo.HeaderContentType)
+		acceptType := c.Request().Header.Get(echo.HeaderAccept)
 
 		loc, err := getIpInfo(ipAddr)
 		if err != nil {
@@ -59,9 +62,7 @@ func main() {
 			return err
 		}
 
-		contentType := c.Response().Header().Get(echo.HeaderContentType)
-		acceptType := c.Response().Header().Get(echo.HeaderAccept)
-		if acceptType == "application/json" || contentType == "application/json" {
+		if strings.Contains(acceptType, "json") || strings.Contains(contentType, "json") {
 			return responseJson(c, curTime, loc, prayerTimes, nextPrayer, nextPrayerUntil)
 		}
 
