@@ -9,10 +9,15 @@ import (
 	"net/http"
 	"time"
 
+  "golang.org/x/time/rate"
 	"github.com/labstack/echo/v4"
+  "github.com/labstack/echo/v4/middleware"
 )
 
-var APP_PORT = "3000"
+var (
+  APP_PORT = "3000"
+  API_RATE_LIMIT = 5.00
+)
 
 func PrayerNames() []string {
 	return []string{"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"}
@@ -20,6 +25,19 @@ func PrayerNames() []string {
 
 func main() {
 	e := echo.New()
+
+  e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(API_RATE_LIMIT))))
+
+	// CORS restricted with a custom function to allow origins
+	// and with the GET, PUT, POST or DELETE methods allowed.
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOriginFunc: func (_ string) (bool, error) {
+      // for now, always return true
+      return true, nil
+    },
+		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
+
 	e.GET("/", func(c echo.Context) error {
 		ipAddr := c.RealIP()
 
@@ -72,9 +90,9 @@ next prayer: %v (%v remaining)
 ==========
 prayer times for %v
 `, loc.City, loc.Region, loc.Country, curTime.Format("15:04"), nextPrayer, nextPrayerUntil.Round(time.Minute).String(), curTime.Format("02-01-2006"))
-  for _, i := range PrayerNames() {
-    respText += i + ": " + prayerTimes[i] + "\n"
-  }
+	for _, i := range PrayerNames() {
+		respText += i + ": " + prayerTimes[i] + "\n"
+	}
 
 	return c.String(http.StatusOK, respText)
 }
