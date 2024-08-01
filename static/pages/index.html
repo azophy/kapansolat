@@ -14,9 +14,40 @@
 
   <script>
     function $(id) { return document.getElementById(id); }
-    fetch(window.location, { headers: { Content-Type: "application/json" } }).then(r => r.text()).then(s => $("debug").innerText = s);
     $("location").innerText = window.location.href;
     $("next_prayer").innerText = "jsjsis";
+
+    // fetch prayer times
+    // display prayer times
+    // determine next prayer time
+    // if past isya, exit
+
+    // start counter
+      // update countdown
+      // if more then 10 minutes, color green
+      // if less then 10 minutes, color yellow
+      // if less then 0 minutes, color red
+      // if less then -10 min, change next prayer time
+
+    let nextPrayer = "", nextPrayerTime = null, prayerTimes = null
+    let timezone = ""
+
+    async function fetchPrayerTimes() {
+      let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
+      if (!resp.ok) return;
+      let data = await resp.body()
+
+      prayerTimes = data.prayer_times;
+      nextPrayer = data.next_prayer;
+      nextPrayerTime = prayerTimes[nextPrayer]
+      let loc = data.current_location
+      timezone = loc.timezone
+
+      $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
+      $('debug').innerText = JSON.stringify(prayerTimes, null, 2)
+    }
+
+    fetchPrayerTimes();
   </script>
 </body>
 </html>
