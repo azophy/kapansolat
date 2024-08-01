@@ -2,15 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KapanSolat</title>
+  <style>
+main {
+  max-width: 600px;
+  margin: auto;
+}
+  </style>
 </head>
 <body>
-  <h1>KapanSolat</h1>
-  detected location: <span id="location"></span> <br/>
-  current date & time: <span id="current_datetime"></span> <br/>
-  next prayer time: <span id="next_prayer"></span> <br/>
-  prayer times for today: <span id="prayer_times"></span> <br/>
-  <pre id="debug"></pre>
+  <main>
+    <h1>KapanSolat</h1>
+    <div id="loader">loading data...</div>
+    <div id="content" style="display:none">
+      detected location: <span id="location"></span> <br/>
+      current date & time: <span id="current_datetime"></span> <br/>
+      next prayer time: <span id="next_prayer"></span> <br/>
+      prayer times for today: <span id="prayer_times"></span> <br/>
+      <pre id="debug"></pre>
+    </div>
+  </main>
 
   <script>
     function $(id) { return document.getElementById(id); }
@@ -34,20 +46,32 @@
 
     async function fetchPrayerTimes() {
       let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
-      if (!resp.ok) return;
-      let data = await resp.body()
+      if (resp.ok) {
+        let data = await resp.json()
 
-      prayerTimes = data.prayer_times;
-      nextPrayer = data.next_prayer;
-      nextPrayerTime = prayerTimes[nextPrayer]
-      let loc = data.current_location
-      timezone = loc.timezone
+        prayerTimes = data.prayer_times;
+        nextPrayer = data.next_prayer;
+        nextPrayerTime = prayerTimes[nextPrayer]
+        let loc = data.current_location
+        timezone = loc.timezone
 
-      $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
-      $('debug').innerText = JSON.stringify(prayerTimes, null, 2)
+        $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
+        $('debug').innerText = JSON.stringify(prayerTimes, null, 2)
+      } else {
+        $('content').innerText = 'error'
+      }
+
+      $('loader').style.display = 'none'
+      $('content').style.display = 'block'
     }
 
-    fetchPrayerTimes();
+    // Alternative to load event. ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState#readystatechange_as_an_alternative_to_load_event
+    document.onreadystatechange = () => {
+        if (document.readyState === "complete") {
+          fetchPrayerTimes();
+        }
+    };
+
   </script>
 </body>
 </html>
