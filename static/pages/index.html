@@ -72,7 +72,7 @@ main {
         currentDate = serverCurrentTime.toFormat('yyyy-mm-dd')
         //prayerTimes = data.prayer_times;
         prayerNames.map(item => {
-          prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayerTimes[name]);
+          prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayer_times[name]);
         });
         nextPrayer = data.next_prayer;
         nextPrayerTime = prayerTimes[nextPrayer]
@@ -80,7 +80,7 @@ main {
         timezone = loc.timezone
 
         $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
-        $('debug').innerText = JSON.stringify(data.prayerTimes, null, 2)
+        $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
       } else {
         $('content').innerText = 'error'
       }
