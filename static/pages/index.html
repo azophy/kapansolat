@@ -19,7 +19,6 @@ main {
     <h1>KapanSolat</h1>
     <div id="loader">loading data...</div>
     <div id="content" style="display:none">
-      detected location: <span id="location"></span> <br/>
       current date & time: <span id="current_datetime"></span> <br/>
       next prayer time: <span id="next_prayer"></span> <br/>
       time to next prayer: <span id="time_to_next_prayer"></span> <br/>
@@ -29,9 +28,8 @@ main {
   </main>
 
   <script>
+    var DateTime = luxon.DateTime;
     function $(id) { return document.getElementById(id); }
-    $("location").innerText = window.location.href;
-    $("next_prayer").innerText = "jsjsis";
 
     // fetch prayer times
     // display prayer times
@@ -53,7 +51,7 @@ main {
     function calcNextPrayerTime() {
       let now = DateTime.now()
       prayerNames.forEach((v,k) => {
-        if now < v {
+        if (now < v) {
           nextPrayerTime = v
           nextPrayer = k
           return
@@ -96,7 +94,7 @@ main {
         let diff = now.diff(nextPrayerTime, "minutes").as('minutes')
 
         timeToNextPrayerEl.innerText = diff + ' minutes'
-        if diff < -10 {
+        if (diff < -10) {
           calcNextPrayerTime()
         }
       }, 500);
