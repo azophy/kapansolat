@@ -10,6 +10,9 @@ main {
   margin: auto;
 }
   </style>
+  <script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js "></script>
+  <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
 </head>
 <body>
   <main>
@@ -19,6 +22,7 @@ main {
       detected location: <span id="location"></span> <br/>
       current date & time: <span id="current_datetime"></span> <br/>
       next prayer time: <span id="next_prayer"></span> <br/>
+      time to next prayer: <span id="time_to_next_prayer"></span> <br/>
       prayer times for today: <span id="prayer_times"></span> <br/>
       <pre id="debug"></pre>
     </div>
@@ -41,28 +45,61 @@ main {
       // if less then 0 minutes, color red
       // if less then -10 min, change next prayer time
 
-    let nextPrayer = "", nextPrayerTime = null, prayerTimes = null
-    let timezone = ""
+    let nextPrayer = "", nextPrayerTime = null, prayerTimes = {}
+    let timezone = "", currentDate = ''
+    let prayerNames = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+    let timeToNextPrayerEl = $('time_to_next_prayer')
+
+    function calcNextPrayerTime() {
+      let now = DateTime.now()
+      prayerNames.forEach((v,k) => {
+        if now < v {
+          nextPrayerTime = v
+          nextPrayer = k
+          return
+        }
+      })
+
+      // if after isha
+      nextPrayer = ''
+      nextPrayerTime = prayerTimes['Isha']
+    }
 
     async function fetchPrayerTimes() {
       let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
       if (resp.ok) {
         let data = await resp.json()
 
-        prayerTimes = data.prayer_times;
+        serverCurrentTime = DateTime.fromISO(data.current_time)
+        currentDate = serverCurrentTime.toFormat('yyyy-mm-dd')
+        //prayerTimes = data.prayer_times;
+        prayerNames.map(item => {
+          prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayerTimes[name]);
+        });
         nextPrayer = data.next_prayer;
         nextPrayerTime = prayerTimes[nextPrayer]
         let loc = data.current_location
         timezone = loc.timezone
 
         $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
-        $('debug').innerText = JSON.stringify(prayerTimes, null, 2)
+        $('debug').innerText = JSON.stringify(data.prayerTimes, null, 2)
       } else {
         $('content').innerText = 'error'
       }
 
       $('loader').style.display = 'none'
       $('content').style.display = 'block'
+
+      // start countdown
+      setInterval(function () {
+        let now = DateTime.now()
+        let diff = now.diff(nextPrayerTime, "minutes").as('minutes')
+
+        timeToNextPrayerEl.innerText = diff + ' minutes'
+        if diff < -10 {
+          calcNextPrayerTime()
+        }
+      }, 500);
     }
 
     // Alternative to load event. ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState#readystatechange_as_an_alternative_to_load_event
