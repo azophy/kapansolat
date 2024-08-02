@@ -65,25 +65,29 @@ main {
     }
 
     async function fetchPrayerTimes() {
-      let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
-      if (resp.ok) {
-        let data = await resp.json()
+      try {
+        let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
+        if (resp.ok) {
+          let data = await resp.json()
 
-        serverCurrentTime = DateTime.fromISO(data.current_time)
-        currentDate = serverCurrentTime.toFormat('yyyy-mm-dd')
-        //prayerTimes = data.prayer_times;
-        prayerNames.map(item => {
-          prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayer_times[name]);
-        });
-        nextPrayer = data.next_prayer;
-        nextPrayerTime = prayerTimes[nextPrayer]
-        let loc = data.current_location
-        timezone = loc.timezone
+          let loc = data.current_location
+          timezone = loc.timezone
+          serverCurrentTime = DateTime.fromISO(data.current_time)
+          currentDate = serverCurrentTime.toFormat('yyyy-mm-dd')
+          //prayerTimes = data.prayer_times;
+          prayerNames.map(item => {
+            prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayer_times[name], { zone: timezone });
+          });
+          nextPrayer = data.next_prayer;
+          nextPrayerTime = prayerTimes[nextPrayer]
 
-        $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
-        $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
-      } else {
-        $('content').innerText = 'error'
+          $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
+          $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
+        } else {
+          $('content').innerText = 'error'
+        }
+      } catch (e) {
+        $('content').innerText = 'error: ' + e.message
       }
 
       $('loader').style.display = 'none'
@@ -92,7 +96,7 @@ main {
       // start countdown
       setInterval(function () {
         let now = DateTime.now()
-        let diff = now.diff(nextPrayerTime, "minutes").as('minutes')
+        let diff = Math.floor(nextPrayerTime.diff(now, 'minutes').as('minutes'))
 
         timeToNextPrayerEl.innerText = diff + ' minutes'
         if (diff < -10) {
