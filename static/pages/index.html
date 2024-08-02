@@ -93,7 +93,7 @@
 
     async function fetchPrayerTimes() {
       try {
-        let resp = await fetch(window.location.href + "?response-type=json")
+        let resp = await fetch(window.location.href + "?response=json")
         if (resp.ok) {
           let data = await resp.json()
 
@@ -152,4 +152,4 @@
 
   </script>
 </body>
-</html>
+:/html>

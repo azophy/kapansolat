@@ -1,13 +1,13 @@
 package main
 
 import (
-  "os"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -22,11 +22,11 @@ var (
 )
 
 func getEnvOrDefault(key, defaultValue string) string {
-  val := os.Getenv(key)
-  if val == "" {
-    val = defaultValue
-  }
-  return val
+	val := os.Getenv(key)
+	if val == "" {
+		val = defaultValue
+	}
+	return val
 }
 
 func PrayerNames() []string {
@@ -50,30 +50,29 @@ func main() {
 
 	e.GET("/", func(c echo.Context) error {
 		ipAddr := getEnvOrDefault("DEBUG_IP", c.RealIP())
-		responseType := c.QueryParam("response-type")
-    isResponseJson := responseType == "json"
+		isResponseJson := c.QueryParam("response") == "json"
 
-    // debug log
-    //log.Printf("acceptType: %v, contentType: %v", acceptType, contentType)
-    //for name, values := range c.Request().Header {
-      //for _, value := range values {
-        //log.Printf("%v: %v", name, value)
-      //}
-    //}
+		// debug log
+		//log.Printf("acceptType: %v, contentType: %v", acceptType, contentType)
+		//for name, values := range c.Request().Header {
+		//for _, value := range values {
+		//log.Printf("%v: %v", name, value)
+		//}
+		//}
 
-    plaintextUserAgentKeywords := []string{"curl", "httpie"}
+		plaintextUserAgentKeywords := []string{"curl", "httpie"}
 		userAgent := c.Request().Header.Get("User-Agent")
-    isResponsePlaintext := false
-    for _, keyword := range plaintextUserAgentKeywords {
-      if strings.Contains(userAgent, keyword) {
-        isResponsePlaintext = true
-        break
-      }
-    }
+		isResponsePlaintext := false
+		for _, keyword := range plaintextUserAgentKeywords {
+			if strings.Contains(userAgent, keyword) {
+				isResponsePlaintext = true
+				break
+			}
+		}
 
-    if !isResponseJson && !isResponsePlaintext {
-      return c.File("static/pages/index.html")
-    }
+		if !isResponseJson && !isResponsePlaintext {
+			return c.File("static/pages/index.html")
+		}
 
 		loc, err := getIpInfo(ipAddr)
 		if err != nil {
@@ -93,8 +92,8 @@ func main() {
 			return err
 		}
 
-    // avoid client-side caching: https://stackoverflow.com/a/9886945/2496217
-    c.Response().Header().Set(echo.HeaderCacheControl, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
+		// avoid client-side caching: https://stackoverflow.com/a/9886945/2496217
+		c.Response().Header().Set(echo.HeaderCacheControl, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 		if isResponseJson {
 			return responseJson(c, curTime, loc, prayerTimes, nextPrayer, nextPrayerUntil)
 		}
@@ -145,7 +144,7 @@ func responseJson(c echo.Context, curTime time.Time, loc IpInfo, prayerTimes Pra
 func jsonRequest(req *http.Request, res interface{}) error {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-    log.Printf("encounter error: %v", err)
+		log.Printf("encounter error: %v", err)
 		return err
 	}
 
