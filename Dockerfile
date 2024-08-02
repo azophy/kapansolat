@@ -8,6 +8,8 @@ COPY . .
 RUN go build -v -o /app .
 
 FROM alpine
+# add required tzdata. ref: https://stackoverflow.com/a/62159987/2496217
+RUN apk --no-cache add tzdata
 WORKDIR /app
 COPY --from=builder /app /app/
 COPY static/ /app/static/

@@ -14,6 +14,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/time/rate"
+  // fix missing tzdata: https://go.dev/doc/go1.15#time_tzdata
+  _ "time/tzdata"
 )
 
 var (
