@@ -21,7 +21,7 @@ main {
     <div id="content" style="display:none">
       current location: <span id="location"></span> <br/>
       current date & time: <span id="current_datetime"></span> <br/>
-      next prayer time: <span id="next_prayer"></span> <br/>
+      next prayer: <span id="next_prayer"></span> <br/>
       time to next prayer: <span id="time_to_next_prayer"></span> <br/>
       prayer times for today: <span id="prayer_times"></span> <br/>
       <pre id="debug"></pre>
@@ -44,10 +44,14 @@ main {
       // if less then 0 minutes, color red
       // if less then -10 min, change next prayer time
 
-    let nextPrayer = "", nextPrayerTime = null, prayerTimes = {}
-    let timezone = "", currentDate = ''
-    let prayerNames = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
-    let timeToNextPrayerEl = $('time_to_next_prayer')
+    var nextPrayer = "", nextPrayerTime = null, prayerTimes = {}
+    var timezone = "", currentDate = ''
+    var prayerNames = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+
+    var timeToNextPrayerEl = $('time_to_next_prayer')
+    var nextPrayerEl = $('next_prayer')
+    var timeToNextPrayerEl = $('time_to_next_prayer')
+    var currentDatetimeEl = $('current_datetime')
 
     function calcNextPrayerTime() {
       let now = DateTime.now()
@@ -73,9 +77,9 @@ main {
           let loc = data.current_location
           timezone = loc.timezone
           serverCurrentTime = DateTime.fromISO(data.current_time)
-          currentDate = serverCurrentTime.toFormat('yyyy-mm-dd')
+          currentDate = serverCurrentTime.toFormat('yyyy-LL-dd')
           //prayerTimes = data.prayer_times;
-          prayerNames.map(item => {
+          prayerNames.map(name => {
             prayerTimes[name] = DateTime.fromSQL(currentDate + " " + data.prayer_times[name], { zone: timezone });
           });
           nextPrayer = data.next_prayer;
@@ -94,15 +98,20 @@ main {
       $('content').style.display = 'block'
 
       // start countdown
-      setInterval(function () {
-        let now = DateTime.now()
-        let diff = Math.floor(nextPrayerTime.diff(now, 'minutes').as('minutes'))
+      setInterval(updateCountdown, 500);
+    }
 
-        timeToNextPrayerEl.innerText = diff + ' minutes'
-        if (diff < -10) {
-          calcNextPrayerTime()
-        }
-      }, 500);
+    function updateCountdown() {
+      let now = DateTime.now()
+      let diff = Math.floor(nextPrayerTime.diff(now, 'minutes').as('minutes'))
+
+      if (diff < -10) {
+        calcNextPrayerTime()
+      }
+
+      timeToNextPrayerEl.innerText = diff + ' minutes'
+      nextPrayerEl.innerText = nextPrayer
+      currentDatetimeEl.innerText = now.toFormat('dd-LL-yyyy hh:mm:ss')
     }
 
     // Alternative to load event. ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState#readystatechange_as_an_alternative_to_load_event
