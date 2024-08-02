@@ -77,6 +77,8 @@ func main() {
 			return err
 		}
 
+    // avoid client-side caching: https://stackoverflow.com/a/9886945/2496217
+    c.Response().Header().Set(echo.HeaderCacheControl, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 		if isResponseJson {
 			return responseJson(c, curTime, loc, prayerTimes, nextPrayer, nextPrayerUntil)
 		}
