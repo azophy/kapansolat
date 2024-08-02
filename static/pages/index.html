@@ -11,8 +11,10 @@ main {
 }
   </style>
   <script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js "></script>
+  <!-- script for debugging on mobile phone
   <script src="//cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
+  -->
 </head>
 <body>
   <main>
@@ -26,7 +28,7 @@ main {
         <span id="next_prayer" style="font-weight: bold"></span> prayer <br/>
       </div>
       prayer times for today:
-      <div id="prayer_times"></div> <br/>
+      <div id="prayer_times" style="font-size:2rem"></div> <br/>
       <pre id="debug"></pre>
     </div>
   </main>
@@ -92,7 +94,7 @@ main {
 
           // $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
           prayerNames.forEach(name => {
-            $('prayer_times').innerText += name + ": " + date.prayer_times[name]
+            $('prayer_times').innerHTML += name + ": " + data.prayer_times[name] + "<br/>"
           })
         } else {
           $('content').innertext = 'error'
