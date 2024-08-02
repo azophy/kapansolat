@@ -19,11 +19,14 @@ main {
     <h1>KapanSolat</h1>
     <div id="loader">loading data...</div>
     <div id="content" style="display:none">
-      current location: <span id="location"></span> <br/>
+      detected location: <span id="location"></span> <br/>
       current date & time: <span id="current_datetime"></span> <br/>
-      next prayer: <span id="next_prayer"></span> <br/>
-      time to next prayer: <span id="time_to_next_prayer"></span> <br/>
-      prayer times for today: <span id="prayer_times"></span> <br/>
+      <div style="font-size:2rem">
+        <span id="time_to_next_prayer" style="font-weight: bold"></span> to
+        <span id="next_prayer" style="font-weight: bold"></span> prayer <br/>
+      </div>
+      prayer times for today:
+      <div id="prayer_times"></div> <br/>
       <pre id="debug"></pre>
     </div>
   </main>
@@ -86,9 +89,13 @@ main {
           nextPrayerTime = prayerTimes[nextPrayer]
 
           $('location').innerText = loc.city + ', ' + loc.regionName + ', ' + loc.country
-          $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
+
+          // $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
+          prayerNames.forEach(name => {
+            $('prayer_times').innerText += name + ": " + date.prayer_times[name]
+          })
         } else {
-          $('content').innerText = 'error'
+          $('content').innertext = 'error'
         }
       } catch (e) {
         $('content').innerText = 'error: ' + e.message
@@ -103,6 +110,10 @@ main {
 
     function updateCountdown() {
       let now = DateTime.now()
+      nextPrayerEl.innerText = nextPrayer
+      currentDatetimeEl.innerText = now.toFormat('dd-LL-yyyy hh:mm:ss')
+
+      if (nextPrayer == 'Isha') return;
       let diff = Math.floor(nextPrayerTime.diff(now, 'minutes').as('minutes'))
 
       if (diff < -10) {
@@ -110,8 +121,6 @@ main {
       }
 
       timeToNextPrayerEl.innerText = diff + ' minutes'
-      nextPrayerEl.innerText = nextPrayer
-      currentDatetimeEl.innerText = now.toFormat('dd-LL-yyyy hh:mm:ss')
     }
 
     // Alternative to load event. ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState#readystatechange_as_an_alternative_to_load_event
