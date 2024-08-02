@@ -5,10 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KapanSolat</title>
   <style>
-main {
-  max-width: 600px;
-  margin: auto;
-}
+    main {
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+    .capsule {
+      font-size:2rem;
+      width: 100%;
+      margin: 3px;
+      padding: 3px;
+      border: 3px solid #333;
+      border-radius: 15px;
+      background-color: green;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .bg-green { background-color: green; }
+    .bg-cyan { background-color: cyan; }
   </style>
   <script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js "></script>
   <!-- script for debugging on mobile phone
@@ -23,12 +38,12 @@ main {
     <div id="content" style="display:none">
       detected location: <span id="location"></span> <br/>
       current date & time: <span id="current_datetime"></span> <br/>
-      <div style="font-size:2rem">
-        <span id="time_to_next_prayer" style="font-weight: bold"></span> to
-        <span id="next_prayer" style="font-weight: bold"></span> prayer <br/>
+      <div class="capsule bg-cyan">
+        <strong id="time_to_next_prayer"></strong> to
+        <strong id="next_prayer"></strong> prayer <br/>
       </div>
       prayer times for today:
-      <div id="prayer_times" style="font-size:2rem"></div> <br/>
+      <div id="prayer_times" style="padding:1em"></div> <br/>
       <pre id="debug"></pre>
     </div>
   </main>
@@ -75,7 +90,7 @@ main {
 
     async function fetchPrayerTimes() {
       try {
-        let resp = await fetch(window.location, { headers: { "Accept": "application/json" } })
+        let resp = await fetch(window.location.href + "?response-type=json")
         if (resp.ok) {
           let data = await resp.json()
 
@@ -94,7 +109,7 @@ main {
 
           // $('debug').innerText = JSON.stringify(data.prayer_times, null, 2)
           prayerNames.forEach(name => {
-            $('prayer_times').innerHTML += name + ": " + data.prayer_times[name] + "<br/>"
+            $("prayer_times").innerHTML += `<div class="capsule bg-green" id="prayer-time-${name}">${name}: ${data.prayer_times[name]}</div>`
           })
         } else {
           $('content').innertext = 'error'
@@ -116,13 +131,13 @@ main {
       currentDatetimeEl.innerText = now.toFormat('dd-LL-yyyy hh:mm:ss')
 
       if (nextPrayer == 'Isha') return;
-      let diff = Math.floor(nextPrayerTime.diff(now, 'minutes').as('minutes'))
+      let diff = nextPrayerTime.diff(now, 'seconds')
 
       if (diff < -10) {
         calcNextPrayerTime()
       }
 
-      timeToNextPrayerEl.innerText = diff + ' minutes'
+      timeToNextPrayerEl.innerText = diff.toFormat('hh:mm:ss')
     }
 
     // Alternative to load event. ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState#readystatechange_as_an_alternative_to_load_event

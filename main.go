@@ -1,6 +1,7 @@
 package main
 
 import (
+  "os"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +20,14 @@ var (
 	APP_PORT       = "3000"
 	API_RATE_LIMIT = 5.00
 )
+
+func getEnvOrDefault(key, defaultValue string) string {
+  val := os.Getenv(key)
+  if val == "" {
+    val = defaultValue
+  }
+  return val
+}
 
 func PrayerNames() []string {
 	return []string{"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"}
@@ -40,10 +49,17 @@ func main() {
 	}))
 
 	e.GET("/", func(c echo.Context) error {
-		ipAddr := c.RealIP()
-		contentType := c.Request().Header.Get(echo.HeaderContentType)
-		acceptType := c.Request().Header.Get(echo.HeaderAccept)
-    isResponseJson := strings.Contains(acceptType, "json") || strings.Contains(contentType, "json")
+		ipAddr := getEnvOrDefault("DEBUG_IP", c.RealIP())
+		responseType := c.QueryParam("response-type")
+    isResponseJson := responseType == "json"
+
+    // debug log
+    //log.Printf("acceptType: %v, contentType: %v", acceptType, contentType)
+    //for name, values := range c.Request().Header {
+      //for _, value := range values {
+        //log.Printf("%v: %v", name, value)
+      //}
+    //}
 
     plaintextUserAgentKeywords := []string{"curl", "httpie"}
 		userAgent := c.Request().Header.Get("User-Agent")
@@ -129,6 +145,7 @@ func responseJson(c echo.Context, curTime time.Time, loc IpInfo, prayerTimes Pra
 func jsonRequest(req *http.Request, res interface{}) error {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+    log.Printf("encounter error: %v", err)
 		return err
 	}
 
@@ -140,7 +157,7 @@ func jsonRequest(req *http.Request, res interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Printf(string(respBody))
+	//log.Printf(string(respBody))
 
 	err = json.Unmarshal(respBody, &res)
 	if err != nil {
